@@ -1,0 +1,90 @@
+public partial class Default3 : System.Web.UI.Page
+{
+    System.Timers.Timer timer = new System.Timers.Timer(1000);
+    static Boolean fflag = false;
+    string strFileName = "";
+    string fileUrl = "";
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        timer.Elapsed += timer_Elapsed;
+        timer.AutoReset = false;
+        bool IsDown = Request.Form["IsDown"] != null ? Request.Form["IsDown"].ToUpper() == "TRUE" ? true : false : false;
+        strFileName = Request.Form["LocalPath"] != null ? Request.Form["LocalPath"].ToString() : "";
+        fileUrl = Request.Form["HttpPath"] != null ? Request.Form["HttpPath"].ToString() : "";
+        if (IsDown && strFileName != ""&&fileUrl!="")
+        {
+            Response.Write("启动");
+            timer.Start();
+        }
+        else
+        {
+            Response.Write("暂停");
+            fflag = true;
+        }
+    }
+    //间隔触发
+    void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        DownLoad();
+    }
+    private void DownLoad()
+    {
+
+        fflag = false;
+
+        long IStarPos = 0;
+        FileStream fs;
+        if (File.Exists(strFileName))
+        {
+            fs = File.OpenWrite(strFileName);
+            IStarPos = fs.Length;
+            fs.Seek(IStarPos, SeekOrigin.Current);
+        }
+        else
+        {
+            fs = new System.IO.FileStream(strFileName, System.IO.FileMode.Create);
+            IStarPos = 0;
+        }
+
+        try
+        {
+            System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(fileUrl);
+            if (IStarPos > 0)
+                request.AddRange((int)IStarPos);
+            System.IO.Stream ns = request.GetResponse().GetResponseStream();
+            long ConLength = request.GetResponse().ContentLength;
+
+            var max = (int)ConLength + (int)IStarPos;
+            var value = (int)IStarPos;
+            byte[] nbytes = new byte[512];
+            int nReadSize = 0;
+            nReadSize = ns.Read(nbytes, 0, 512);
+            IStarPos = IStarPos + nReadSize;
+
+
+            while (nReadSize > 0)
+            {
+                fs.Write(nbytes, 0, nReadSize);
+                nReadSize = ns.Read(nbytes, 0, 512);
+                //System.EventHandler(Button2_Click);
+                // Application.DoEvents();
+                if (fflag == true)
+                {
+                   
+                    timer.Stop();
+                    break;
+                }
+                IStarPos = IStarPos + nReadSize;
+
+                value += nReadSize;
+            }
+            fs.Close();
+            ns.Close();
+           
+        }
+
+        catch (Exception ex)
+        {
+            fs.Close();
+        }
+  }

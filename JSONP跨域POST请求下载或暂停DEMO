@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <script src="Source/jquery-1.11.1.min.js"></script>
+    <script>
+        (function () {
+            $("#getJsonpByJquery").click(function () {
+               
+            })
+        }());
+        function star(a) {
+            $.ajax({
+                url: 'http://localhost:3181/DownLoad.aspx',
+                dataType: "jsonp",
+                jsonp: "callback",
+                data: {
+                    "IsDown": "true", "LocalPath": "e:\\temp\\testdown.exe",
+                    "HttpPath": "http://59.175.11.11/download/testdown.exe"
+                },
+                type: "POST",
+                success: function (data) {
+                    console.log(data)
+                }
+            });
+        }
+        function stop() {
+            $.ajax({
+                url: 'http://localhost:3181/DownLoad.aspx',
+                dataType: "jsonp",
+                jsonp: "callback",
+                data: {
+                    "IsDown": "false", "LocalPath": "e:\\temp\\testdown.exe",
+                    "HttpPath": "http://59.175.11.11/download/testdown.exe"
+                },
+                type: "POST",
+                success: function (data) {
+                    console.log(data)
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <button id="getJsonpByJquery" onclick="star()">启动</button>
+    <button id="getJsonpByJquery" onclick="stop()">暂停</button>
+</body>
+</html>
